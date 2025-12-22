@@ -1,0 +1,199 @@
+---
+---
+title: "NFL WR Receiving Yards Dashboard"
+author: "Abdul Banire"
+
+format:
+  html:
+    orientation: columns
+    theme: cosmo
+    self-contained: true
+
+execute:
+  echo: false
+---
+
+
+```{r setup, include=FALSE}
+library(ggplot2)
+library(tidyverse)
+library(GGally)
+library(readr)
+
+wr_model_data <- read_csv("data/processed/wr_model_data.csv", show_col_types = FALSE)
+wr_2025 <- read_csv("data/processed/wr_2025_predictions.csv", show_col_types = FALSE)
+wr_stats <- read_csv("data/processed/wr_stats.csv", show_col_types = FALSE)
+```
+
+# Exploratory Analysis
+
+## Column {width="40%"}
+
+### Distribution of WR Targets
+
+```{r}
+ggplot(wr_model_data, aes(targets)) +
+  geom_histogram(bins = 35, fill = "steelblue", colour = "black") +
+  labs(
+    title = "Distribution of WR Targets",
+    x = "Targets",
+    y = "Count"
+  ) +
+  theme_minimal()
+```
+
+### Correlation Heatmap
+
+```{r}
+wr_model_data %>%
+  select(
+    Targets = targets,
+    Rec = receptions,
+    Yds = rec_yards,
+    TDs = rec_tds,
+    YPT = yards_per_target,
+    TPA = team_pass_attempts,
+    NextYds = next_rec_yards
+  ) %>%
+  ggcorr(label = TRUE, label_size = 3, hjust = 0.75) +
+  labs(title = "Feature Correlations")
+```
+
+## Column {width="60%"}
+
+### Targets vs Next-Season Yards
+
+```{r}
+ggplot(wr_model_data, aes(x = targets, y = next_rec_yards)) +
+  geom_point(alpha = 0.4, color = "steelblue") +
+  geom_smooth(method = "lm", se = TRUE, color = "darkblue") +
+  labs(
+    title = "Targets vs Next-Season Receiving Yards",
+    x = "Targets (Current Season)",
+    y = "Next-Season Receiving Yards"
+  ) +
+  theme_minimal()
+```
+
+### Receiving Yards vs Next-Season Yards
+
+```{r}
+ggplot(wr_model_data, aes(x = rec_yards, y = next_rec_yards)) +
+  geom_point(alpha = 0.4, colour = "darkgreen") +
+  geom_smooth(method = "lm", se = TRUE, color = "darkgreen") +
+  labs(
+    title = "Receiving Yards vs Next-Season Receiving Yards",
+    x = "Receiving Yards (Current Season)",
+    y = "Next-Season Receiving Yards"
+  ) +
+  theme_minimal()
+```
+
+# Top Performers
+
+## Column {width="50%"}
+
+### Top 15 WRs by Receiving Yards (2024)
+
+```{r}
+wr_stats %>%
+  arrange(desc(rec_yards)) %>%
+  filter(season == 2024) %>%
+  slice(1:15) %>%
+  ggplot(aes(x = reorder(receiver_player_name, rec_yards), y = rec_yards)) +
+  geom_col(fill = "#8B4513", alpha = 0.8) +
+  coord_flip() +
+  labs(
+    title = "Top 15 WRs by Receiving Yards (2024)",
+    x = "",
+    y = "Receiving Yards"
+  ) +
+  theme_minimal() +
+  theme(axis.text.y = element_text(size = 10))
+```
+
+## Column {width="50%"}
+
+### Top 15 Predicted WRs by 2025 Receiving Yards
+
+```{r}
+wr_2025_top <- wr_2025 %>%
+  arrange(desc(pred_2025_rec_yards)) %>%
+  slice(1:15)
+
+ggplot(wr_2025_top, aes(x = reorder(receiver_player_name, pred_2025_rec_yards), 
+                        y = pred_2025_rec_yards)) +
+  geom_col(fill = "#9370DB", alpha = 0.8) +
+  coord_flip() +
+  labs(
+    title = "Top 15 Predicted WRs by Receiving Yards (2025)",
+    x = "",
+    y = "Predicted Receiving Yards"
+  ) +
+  theme_minimal() +
+  theme(axis.text.y = element_text(size = 10))
+```
+
+# Model Insights
+
+## Row {height="30%"}
+
+### Total WRs {.value-box}
+
+```{r}
+list(
+  title = "Total WRs Analyzed",
+  value = nrow(wr_model_data),
+  color = "primary"
+)
+```
+
+### Average Targets {.value-box}
+
+```{r}
+avg_targets <- round(mean(wr_model_data$targets, na.rm = TRUE), 1)
+list(
+  title = "Average Targets",
+  value = avg_targets,
+  color = "info"
+)
+```
+
+### Average Yards {.value-box}
+
+```{r}
+avg_yards <- round(mean(wr_model_data$rec_yards, na.rm = TRUE), 0)
+list(
+  title = "Average Receiving Yards",
+  value = avg_yards,
+  color = "success"
+)
+```
+
+## Row {height="70%"}
+
+### 2024 Receiving Yards Distribution
+
+```{r}
+ggplot(wr_model_data, aes(x = rec_yards)) +
+  geom_density(fill = "steelblue", alpha = 0.6) +
+  labs(
+    title = "2024 Receiving Yards Distribution", 
+    x = "Yards", 
+    y = "Density"
+  ) +
+  theme_minimal()
+```
+
+### 2025 Predicted Yards Distribution
+
+```{r}
+ggplot(wr_2025, aes(x = pred_2025_rec_yards)) +
+  geom_density(fill = "purple", alpha = 0.6) +
+  labs(
+    title = "2025 Predicted Yards Distribution", 
+    x = "Yards", 
+    y = "Density"
+  ) +
+  theme_minimal()
+```
