@@ -1,12 +1,12 @@
 # NFL Wide Receiver Predictive Model
 
-## Interactive Dashboard
-View the live dashboard (no R required):
+# NFL Wide Receiver Predictive Model
 
-🔗 https://abdulbanire.github.io/nfl-wr-predictive-model/wr-receiving-yards-dashboard.html
+🔗 **Live Dashboard:**  
+[Predicting next-season receiving yards](https://abdulbanire.github.io/nfl-wr-predictive-model/wr-receiving-yards-dashboard.html)
 
+Predicting next-season receiving yards for NFL wide receivers using historical play-by-play data.
 
-> Predicting next-season receiving yards for NFL wide receivers using historical play-by-play data.
 
 
 > Predicting next-season receiving yards for NFL wide receivers using historical play-by-play data.
